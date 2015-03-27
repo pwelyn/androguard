@@ -27,7 +27,7 @@ from androguard.core.analysis import analysis
 from androguard.core.bytecodes import apk, dvm
 from androguard.decompiler.dad.ast import (JSONWriter, parse_descriptor,
     literal_string, literal_null, literal_int, literal_long, literal_float,
-    literal_double, literal_bool, dummy)
+    literal_double, literal_bool, literal_hex_int, dummy)
 from androguard.decompiler.dad.control_flow import identify_structures
 from androguard.decompiler.dad.dataflow import (build_def_use,
                                                 place_declarations,
@@ -57,12 +57,13 @@ def get_field_ast(field):
     expr = None
     if field.init_value:
         val = field.init_value.value
-        if field.get_descriptor() == 'Ljava/lang/String;':
-            expr = literal_string(val)
-        elif field.proto == 'B':
-            expr = literal_hex_int(struct.unpack('<b', val)[0])
-        else:
-            expr = dummy(str(val))
+        expr = dummy(str(val))
+
+        if val is not None:
+            if field.get_descriptor() == 'Ljava/lang/String;':
+                expr = literal_string(val)
+            elif field.proto == 'B':
+                expr = literal_hex_int(struct.unpack('<b', val)[0])
 
     return {
         'triple': triple,
